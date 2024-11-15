@@ -1,0 +1,3045 @@
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+bool isSafe(vector<vector<int>>& allocation, vector<vector<int>>& max, vector<int>& available, int num_processes, int num_resources) {
+    vector<int> work = available;
+    vector<bool> finish(num_processes, false);
+    vector<int> safe_sequence(num_processes); 
+    int count = 0;
+
+    while (count < num_processes) {
+        bool found_process = false;
+
+        for (int i = 0; i < num_processes; i++) {
+            if (!finish[i]) {
+                bool can_allocate = true;
+
+                for (int j = 0; j < num_resources; j++) {
+                    if (max[i][j] - allocation[i][j] > work[j]) {
+                        can_allocate = false;
+                        break;
+                    }
+                }
+
+                if (can_allocate) {
+                    for (int j = 0; j < num_resources; j++) {
+                        work[j] += allocation[i][j];
+                    }
+
+                    safe_sequence[count++] = i;
+                    finish[i] = true; 
+                    found_process = true;
+                }
+            }
+        }
+
+        if (!found_process) {
+            cout << "The system is not in a safe state." << endl;
+            return false;
+        }
+    }
+
+    cout << "The system is in a safe state.\nSafe sequence is: ";
+    for (int i = 0; i < num_processes; i++) {
+        cout << "P" << safe_sequence[i];
+        if (i != num_processes - 1) cout << " -> ";
+    }
+    cout << endl;
+
+    return true;
+}
+
+int main() {
+    int num_processes, num_resources;
+
+    cout << "Enter the number of processes: ";
+    cin >> num_processes;
+
+    cout << "Enter the number of resource types: ";
+    cin >> num_resources;
+
+    vector<vector<int>> allocation(num_processes, vector<int>(num_resources));
+    vector<vector<int>> max(num_processes, vector<int>(num_resources));
+    vector<int> available(num_resources);
+
+    cout << "\n--- Allocation Matrix ---\n";
+    cout << "Enter the allocation matrix (resource allocated to each process):\n";
+    for (int i = 0; i < num_processes; i++) {
+        cout << "Process P" << i << ": ";
+        for (int j = 0; j < num_resources; j++) {
+            cin >> allocation[i][j];
+        }
+    }
+
+    cout << "\n--- Max Matrix ---\n";
+    cout << "Enter the maximum resource demand for each process:\n";
+    for (int i = 0; i < num_processes; i++) {
+        cout << "Process P" << i << ": ";
+        for (int j = 0; j < num_resources; j++) {
+            cin >> max[i][j];
+        }
+    }
+
+    cout << "\n--- Available Resources ---\n";
+    cout << "Enter the number of available instances for each resource:\n";
+    for (int i = 0; i < num_resources; i++) {
+        cout << "Resource R" << i << ": ";
+        cin >> available[i];
+    }
+
+    cout << "\nChecking if the system is in a safe state...\n";
+    isSafe(allocation, max, available, num_processes, num_resources);
+
+    return 0;
+}
+
+
+// input
+/*
+not safe
+3
+3
+4 1 2
+3 2 2
+9 0 2
+0 1 0
+2 0 0
+3 0 2
+3 3 2
+*/
+
+---------------------------------------------------------------------------------------
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    FILE *source, *destination;
+    char ch;
+    char line[256];
+
+    // Open the source file in read mode
+    source = fopen("source.txt", "r");
+    if (source == NULL) {
+        printf("Error opening source file.\n");
+        return 1;
+    }
+
+    // Open the destination file in write mode
+    destination = fopen("destination.txt", "w");
+    if (destination == NULL) {
+        printf("Error opening destination file.\n");
+        fclose(source);
+        return 1;
+    }
+
+    // Copying contents character by character
+    while ((ch = fgetc(source)) != EOF) {
+        fputc(ch, destination);
+    }
+
+    // Close the files after character-by-character copy
+    fclose(source);
+    fclose(destination);
+
+    // Re-open the source file to copy line by line
+    source = fopen("source.txt", "r");
+    if (source == NULL) {
+        printf("Error opening source file.\n");
+        return 1;
+    }
+
+    // Open the destination file in write mode again
+    destination = fopen("destination.txt", "a");
+    if (destination == NULL) {
+        printf("Error opening destination file.\n");
+        fclose(source);
+        return 1;
+    }
+
+    // Copying contents line by line
+    while (fgets(line, sizeof(line), source)) {
+        fputs(line, destination);
+    }
+
+    // Close the files after line-by-line copy
+    fclose(source);
+    fclose(destination);
+
+    printf("File copied successfully (character by character and line by line)!\n");
+    return 0;
+}
+
+
+-----------------------------------------------------------------------------------------------------------------
+
+//FCFS
+// #include <iostream>
+// #include <vector>
+// #include <algorithm>
+// using namespace std;
+
+// struct Process {
+//     int id, arrivalTime, burstTime, finishTime, turnaroundTime, waitingTime, startTime;
+// };
+
+// // Sort processes by arrival time
+// bool compareArrival(Process p1, Process p2) {
+//     return p1.arrivalTime < p2.arrivalTime;
+// }
+
+// void displayResults(vector<Process> &processes) {
+//     cout << "\n+-----+------------+------------+------------+------------+------------+\n";
+//     cout << "| PID | ArrivalTime | BurstTime  | FinishTime | Turnaround | WaitingTime|\n";
+//     cout << "+-----+------------+------------+------------+------------+------------+\n";
+    
+//     for (Process &p : processes) {
+//         cout << "|  " << p.id << "  |      " << p.arrivalTime << "     |     " 
+//              << p.burstTime << "     |     " << p.finishTime << "     |     "
+//              << p.turnaroundTime << "     |     " << p.waitingTime << "     |\n";
+//     }
+    
+//     cout << "+-----+------------+------------+------------+------------+------------+\n";
+// }
+
+// void displayGanttChart(vector<Process> &processes) {
+//     cout << "\nGantt Chart (Process Flow):\n";
+//     for (size_t i = 0; i < processes.size(); ++i) {
+//         cout << "P" << processes[i].id;
+//         if (i != processes.size() - 1) {
+//             cout << " -> ";
+//         }
+//     }
+//     cout << endl;
+// }
+
+
+// void FCFS(vector<Process> &processes) {
+//     sort(processes.begin(), processes.end(), compareArrival);
+//     int currentTime = 0;
+    
+//     for (auto &p : processes) {
+//         p.startTime = max(currentTime, p.arrivalTime);            // Calculate start time for Gantt chart
+//         p.finishTime = p.startTime + p.burstTime;                 // Calculate finish time
+//         p.turnaroundTime = p.finishTime - p.arrivalTime;          // TAT = FT - AT
+//         p.waitingTime = p.turnaroundTime - p.burstTime;           // WT = TAT - BT
+//         currentTime = p.finishTime;                               // Update current time
+//     }
+    
+//     displayResults(processes);       
+//     displayGanttChart(processes);
+// }
+
+// int main() {
+//     int numProcesses;
+//     cout << "Enter the number of processes: ";
+//     cin >> numProcesses;
+    
+//     vector<Process> processes(numProcesses);
+    
+//     for (int i = 0; i < numProcesses; i++) {
+//         cout << "Enter Arrival Time and Burst Time for process " << i + 1 << ": ";
+//         processes[i].id = i + 1;
+//         cin >> processes[i].arrivalTime >> processes[i].burstTime;
+//     }
+    
+//     FCFS(processes);
+    
+//     return 0;
+// }
+
+/*
+3
+1 3
+0 5
+3 1
+*/
+
+// --------------------------------------------------------------------------
+
+//1)SJF(non-premp)
+
+// #include <iostream>
+// #include <vector>
+// #include <algorithm>
+// using namespace std;
+
+// struct Process {
+//     int id, arrivalTime, burstTime, finishTime, turnaroundTime, waitingTime;
+//     bool completed = false;
+// };
+
+// // Function to sort by arrival time
+// bool compareArrival(Process p1, Process p2) {
+//     return p1.arrivalTime < p2.arrivalTime;
+// }
+
+// // Function to display the result table
+// void displayResults(vector<Process> &processes) {
+//     cout << "\n+-----+------------+------------+------------+------------+------------+\n";
+//     cout << "| PID | ArrivalTime | BurstTime  | FinishTime | Turnaround | WaitingTime|\n";
+//     cout << "+-----+------------+------------+------------+------------+------------+\n";
+    
+//     for (Process &p : processes) {
+//         cout << "|  " << p.id << "  |      " << p.arrivalTime << "     |     " 
+//              << p.burstTime << "     |     " << p.finishTime << "     |     "
+//              << p.turnaroundTime << "     |     " << p.waitingTime << "     |\n";
+//     }
+    
+//     cout << "+-----+------------+------------+------------+------------+------------+\n";
+// }
+
+// // Function to display the Gantt chart
+// void displayGanttChart(vector<int> &ganttChart) {
+//     cout << "\nGantt Chart (Process Flow):\n";
+//     for (size_t i = 0; i < ganttChart.size(); ++i) {
+//         cout << "P" << ganttChart[i];
+//         if (i != ganttChart.size() - 1) {
+//             cout << " -> "; 
+//         }
+//     }
+//     cout << endl;
+// }
+
+// void SJF_NonPreemptive(vector<Process> &processes) {
+//     int currentTime = 0;
+//     int completedProcesses = 0;
+//     int n = processes.size();
+//     vector<int> ganttChart;
+
+//     while (completedProcesses < n) {
+//         int idx = -1;
+//         int minBurst = 10000;
+        
+//         // Find the process with the shortest burst time that has arrived and is not completed
+//         for (int i = 0; i < n; i++) {
+//             if (processes[i].arrivalTime <= currentTime && !processes[i].completed && processes[i].burstTime < minBurst) {
+//                 minBurst = processes[i].burstTime;
+//                 idx = i;
+//             }
+//         }
+
+//         if (idx != -1) {  // If a process is found
+//             ganttChart.push_back(processes[idx].id);
+//             currentTime += processes[idx].burstTime;
+//             processes[idx].finishTime = currentTime;
+//             processes[idx].turnaroundTime = processes[idx].finishTime - processes[idx].arrivalTime;  // TAT = FT - AT
+//             processes[idx].waitingTime = processes[idx].turnaroundTime - processes[idx].burstTime;    // WT = TAT - BT
+//             processes[idx].completed = true; 
+//             completedProcesses++;
+//         } else {
+//             currentTime++;  // No process available, so increment time
+//         }
+//     }
+
+//     displayResults(processes);   
+//     displayGanttChart(ganttChart);
+// }
+
+// int main() {
+//     int numProcesses;
+//     cout << "Enter the number of processes: ";
+//     cin >> numProcesses;
+    
+//     vector<Process> processes(numProcesses);
+    
+//     for (int i = 0; i < numProcesses; i++) {
+//         cout << "Enter Arrival Time and Burst Time for process " << i + 1 << ": ";
+//         processes[i].id = i + 1;
+//         cin >> processes[i].arrivalTime >> processes[i].burstTime;
+//     }
+    
+//     SJF_NonPreemptive(processes);
+    
+//     return 0;
+// }
+
+/*
+4
+0 4
+0 3
+0 5
+0 2
+*/
+
+
+//-------------------------------------------------------------------------------
+
+// SJF(premp)
+
+// #include <iostream>
+// #include <vector>
+// #include <algorithm>
+// using namespace std;
+
+// // Structure to hold process information
+// struct Process {
+//     int id, arrivalTime, burstTime, remainingTime, finishTime, turnaroundTime, waitingTime;
+//     bool completed = false;  // Flag to check if the process has completed
+// };
+
+// // Function to sort by arrival time
+// bool compareArrival(Process p1, Process p2) {
+//     return p1.arrivalTime < p2.arrivalTime;
+// }
+
+// // Function to display the result table
+// void displayResults(vector<Process> &processes) {
+//     cout << "\n+-----+------------+------------+------------+------------+------------+\n";
+//     cout << "| PID | ArrivalTime | BurstTime  | FinishTime | Turnaround | WaitingTime|\n";
+//     cout << "+-----+------------+------------+------------+------------+------------+\n";
+    
+//     for (Process &p : processes) {
+//         cout << "|  " << p.id << "  |      " << p.arrivalTime << "     |     " 
+//              << p.burstTime << "     |     " << p.finishTime << "     |     "
+//              << p.turnaroundTime << "     |     " << p.waitingTime << "     |\n";
+//     }
+    
+//     cout << "+-----+------------+------------+------------+------------+------------+\n";
+// }
+
+// // Function to display the Gantt chart
+// void displayGanttChart(vector<int> &ganttChart) {
+//     cout << "\nGantt Chart (Process Flow):\n";
+//     for (size_t i = 0; i < ganttChart.size(); ++i) {
+//         cout << "P" << ganttChart[i];
+//         if (i != ganttChart.size() - 1) {
+//             cout << " -> ";  // Add arrow between processes
+//         }
+//     }
+//     cout << endl;
+// }
+
+// // Shortest Job First (Preemptive) Scheduling
+// void SJF_Preemptive(vector<Process> &processes) {
+//     int currentTime = 0, completedProcesses = 0, n = processes.size();
+//     vector<int> ganttChart;  // To store process order in Gantt chart
+//     int lastProcess = -1;    // To avoid recording the same process multiple times consecutively
+    
+//     while (completedProcesses < n) {
+//         int idx = -1;
+//         int minRemainingTime = 10000;  // A large value to find the minimum remaining time
+        
+//         // Find the process with the shortest remaining time that has arrived
+//         for (int i = 0; i < n; i++) {
+//             if (processes[i].arrivalTime <= currentTime && !processes[i].completed && processes[i].remainingTime < minRemainingTime) {
+//                 minRemainingTime = processes[i].remainingTime;
+//                 idx = i;
+//             }
+//         }
+
+//         if (idx != -1) {  // If a process is found
+//             if (lastProcess != idx) {
+//                 ganttChart.push_back(processes[idx].id);  // Record process in Gantt chart if it's new
+//                 lastProcess = idx;
+//             }
+//             processes[idx].remainingTime--; 
+//             currentTime++; 
+
+//             // If the process finishes
+//             if (processes[idx].remainingTime == 0) {
+//                 processes[idx].finishTime = currentTime;  // Set finish time
+//                 processes[idx].turnaroundTime = processes[idx].finishTime - processes[idx].arrivalTime;  // TAT = FT - AT
+//                 processes[idx].waitingTime = processes[idx].turnaroundTime - processes[idx].burstTime;    // WT = TAT - BT
+//                 processes[idx].completed = true;  // Mark process as completed
+//                 completedProcesses++;
+//             }
+//         } else {
+//             currentTime++; 
+//         }
+//     }
+
+//     displayResults(processes);  
+//     displayGanttChart(ganttChart);  
+// }
+
+// int main() {
+//     int numProcesses;
+//     cout << "Enter the number of processes: ";
+//     cin >> numProcesses;
+    
+//     vector<Process> processes(numProcesses);
+    
+//     // Input arrival time and burst time for each process
+//     for (int i = 0; i < numProcesses; i++) {
+//         cout << "Enter Arrival Time and Burst Time for process " << i + 1 << ": ";
+//         processes[i].id = i + 1;
+//         cin >> processes[i].arrivalTime >> processes[i].burstTime;
+//         processes[i].remainingTime = processes[i].burstTime;  // Initially, remaining time is equal to burst time
+//     }
+    
+//     // Perform SJF Preemptive Scheduling
+//     SJF_Preemptive(processes);
+    
+//     return 0;
+// }
+
+/*
+6
+3 6
+2 10
+5 2
+6 1
+4 4
+2 8
+*/
+
+// -----------------------------------------------------------------------------------
+
+// Priority(non-premp)
+
+// #include <iostream>
+// #include <vector>
+// #include <algorithm>
+// using namespace std;
+
+// struct Process {
+//     int id, arrivalTime, burstTime, priority, finishTime, turnaroundTime, waitingTime;
+//     bool completed = false;  // Flag to check if the process has completed
+// };
+
+// // Function to display the result table
+// void displayResults(vector<Process> &processes) {
+//     cout << "\n+-----+------------+------------+------------+------------+------------+----------+\n";
+//     cout << "| PID | ArrivalTime | BurstTime  | Priority   | FinishTime | Turnaround | Waiting  |\n";
+//     cout << "+-----+------------+------------+------------+------------+------------+----------+\n";
+    
+//     for (Process &p : processes) {
+//         cout << "|  " << p.id << "  |      " << p.arrivalTime << "     |     " 
+//              << p.burstTime << "     |     " << p.priority << "      |     " 
+//              << p.finishTime << "     |     " << p.turnaroundTime << "     |    " 
+//              << p.waitingTime << "    |\n";
+//     }
+    
+//     cout << "+-----+------------+------------+------------+------------+------------+----------+\n";
+// }
+
+// // Function to display the Gantt chart
+// void displayGanttChart(vector<int> &ganttChart) {
+//     cout << "\nGantt Chart (Process Flow):\n";
+//     for (size_t i = 0; i < ganttChart.size(); ++i) {
+//         cout << "P" << ganttChart[i];
+//         if (i != ganttChart.size() - 1) {
+//             cout << " -> "; 
+//         }
+//     }
+//     cout << endl;
+// }
+
+// // Non-Preemptive Priority Scheduling
+// void Priority_NonPreemptive(vector<Process> &processes) {
+//     int currentTime = 0;
+//     int completedProcesses = 0;
+//     int n = processes.size();
+//     vector<int> ganttChart; 
+
+//     while (completedProcesses < n) {
+//         int idx = -1;
+//         int highestPriority = 10000;  // Large value to find highest priority (lower value means higher priority)
+
+//         // Find the process with the highest priority that has arrived and is not completed
+//         for (int i = 0; i < n; i++) {
+//             if (processes[i].arrivalTime <= currentTime && !processes[i].completed && processes[i].priority < highestPriority) {
+//                 highestPriority = processes[i].priority;
+//                 idx = i;
+//             }
+//         }
+
+//         if (idx != -1) {  // If a process is found
+//             ganttChart.push_back(processes[idx].id);  // Record process in Gantt chart
+//             currentTime += processes[idx].burstTime;  // Update the current time
+//             processes[idx].finishTime = currentTime;  // Calculate finish time
+//             processes[idx].turnaroundTime = processes[idx].finishTime - processes[idx].arrivalTime;  // TAT = FT - AT
+//             processes[idx].waitingTime = processes[idx].turnaroundTime - processes[idx].burstTime;    // WT = TAT - BT
+//             processes[idx].completed = true;  // Mark process as completed
+//             completedProcesses++;
+//         } else {
+//             currentTime++;  // No process available, increment time
+//         }
+//     }
+
+//     displayResults(processes);
+//     displayGanttChart(ganttChart); 
+// }
+
+// int main() {
+//     int numProcesses;
+//     cout << "Enter the number of processes: ";
+//     cin >> numProcesses;
+
+//     vector<Process> processes(numProcesses);
+
+//     // Input arrival time, burst time, and priority for each process
+//     for (int i = 0; i < numProcesses; i++) {
+//         cout << "Enter Arrival Time, Burst Time, and Priority for process " << i + 1 << ": ";
+//         processes[i].id = i + 1;
+//         cin >> processes[i].arrivalTime >> processes[i].burstTime >> processes[i].priority;
+//     }
+
+//     // Perform Non-Preemptive Priority Scheduling
+//     Priority_NonPreemptive(processes);
+
+//     return 0;
+// }
+
+/*
+3
+0 4 2
+0 2 1
+1 5 3
+*/
+
+// -------------------------------------------------------------------------------------------------------
+
+//Priority(premp)
+// #include <iostream>
+// #include <vector>
+// #include <algorithm>
+// using namespace std;
+
+// // Structure to hold process information
+// struct Process {
+//     int id, arrivalTime, burstTime, remainingTime, priority, finishTime, turnaroundTime, waitingTime;
+//     bool completed = false;  // Flag to check if the process has completed
+// };
+
+// // Function to display the result table
+// void displayResults(const vector<Process>& processes) {
+//     cout << "\n+-----+------------+------------+------------+------------+------------+----------+\n";
+//     cout << "| PID | ArrivalTime | BurstTime  | Priority   | FinishTime | Turnaround | Waiting  |\n";
+//     cout << "+-----+------------+------------+------------+------------+------------+----------+\n";
+    
+//     for (const Process &p : processes) {
+//         cout << "|  " << p.id << "  |      " << p.arrivalTime << "     |     " 
+//              << p.burstTime << "     |     " << p.priority << "      |     " 
+//              << p.finishTime << "     |     " << p.turnaroundTime << "     |    " 
+//              << p.waitingTime << "    |\n";
+//     }
+    
+//     cout << "+-----+------------+------------+------------+------------+------------+----------+\n";
+// }
+
+// // Function to display the Gantt chart
+// void displayGanttChart(const vector<int>& ganttChart) {
+//     cout << "\nGantt Chart (Process Flow):\n";
+//     for (size_t i = 0; i < ganttChart.size(); ++i) {
+//         cout << "P" << ganttChart[i];
+//         if (i != ganttChart.size() - 1) {
+//             cout << " -> ";  // Add arrow between processes
+//         }
+//     }
+//     cout << endl;
+// }
+
+// // Preemptive Priority Scheduling
+// void Priority_Preemptive(vector<Process>& processes) {
+//     int currentTime = 0;
+//     int completedProcesses = 0;
+//     int n = processes.size();
+//     vector<int> ganttChart;  // To store process order in the Gantt chart
+//     int lastProcess = -1;    // To avoid recording the same process multiple times consecutively
+
+//     while (completedProcesses < n) {
+//         int idx = -1;
+//         int highestPriority = 10000;  // Large value to find the highest priority (lower value means higher priority)
+
+//         // Find the process with the highest priority that has arrived
+//         for (int i = 0; i < n; i++) {
+//             if (processes[i].arrivalTime <= currentTime && !processes[i].completed && processes[i].remainingTime > 0 && processes[i].priority < highestPriority) {
+//                 highestPriority = processes[i].priority;
+//                 idx = i;
+//             }
+//         }
+
+//         if (idx != -1) {  // If a process is found
+//             if (lastProcess != idx) {
+//                 ganttChart.push_back(processes[idx].id);  // Record process in Gantt chart if it's new
+//                 lastProcess = idx;
+//             }
+//             processes[idx].remainingTime--;  // Decrease remaining time
+//             currentTime++;  // Increment time
+
+//             // If the process finishes
+//             if (processes[idx].remainingTime == 0) {
+//                 processes[idx].finishTime = currentTime;  // Set finish time
+//                 processes[idx].turnaroundTime = processes[idx].finishTime - processes[idx].arrivalTime;  // TAT = FT - AT
+//                 processes[idx].waitingTime = processes[idx].turnaroundTime - processes[idx].burstTime;    // WT = TAT - BT
+//                 processes[idx].completed = true;  // Mark process as completed
+//                 completedProcesses++;
+//             }
+//         } else {
+//             currentTime++;  // No process available, increment time
+//         }
+//     }
+
+//     displayResults(processes); 
+//     displayGanttChart(ganttChart); 
+// }
+
+// int main() {
+//     int numProcesses;
+//     cout << "Enter the number of processes: ";
+//     cin >> numProcesses;
+
+//     vector<Process> processes(numProcesses);
+
+//     // Input arrival time, burst time, and priority for each process
+//     for (int i = 0; i < numProcesses; i++) {
+//         cout << "Enter Arrival Time, Burst Time, and Priority for process " << i + 1 << ": ";
+//         processes[i].id = i + 1;
+//         cin >> processes[i].arrivalTime >> processes[i].burstTime >> processes[i].priority;
+//         processes[i].remainingTime = processes[i].burstTime;  // Initially, remaining time is equal to burst time
+//     }
+
+//     // Perform Preemptive Priority Scheduling
+//     Priority_Preemptive(processes);
+
+//     return 0;
+// }
+
+
+/*
+4
+0 8 2
+1 4 1
+2 9 3
+3 5 2
+*/
+
+// ---------------------------------------------------------------------------------------------
+
+//Round Robin
+
+// #include <iostream>
+// #include <vector>
+// #include <queue>
+// using namespace std;
+
+// // Structure to hold process information
+// struct Process {
+//     int id, arrivalTime, burstTime, remainingTime, finishTime, turnaroundTime, waitingTime;
+//     bool completed = false;  // Flag to check if the process has completed
+// };
+
+// // Function to display the result table
+// void displayResults(const vector<Process>& processes) {
+//     cout << "\n+-----+------------+------------+------------+------------+------------+----------+\n";
+//     cout << "| PID | ArrivalTime | BurstTime  | FinishTime | Turnaround | Waiting  |\n";
+//     cout << "+-----+------------+------------+------------+------------+----------+\n";
+    
+//     for (const Process &p : processes) {
+//         cout << "|  " << p.id << "  |      " << p.arrivalTime << "     |     " 
+//              << p.burstTime << "     |     " << p.finishTime << "     |     " 
+//              << p.turnaroundTime << "     |    " 
+//              << p.waitingTime << "    |\n";
+//     }
+    
+//     cout << "+-----+------------+------------+------------+------------+----------+\n";
+// }
+
+// // Function to display the Gantt chart
+// void displayGanttChart(const vector<int>& ganttChart) {
+//     cout << "\nGantt Chart (Process Flow):\n";
+//     for (size_t i = 0; i < ganttChart.size(); ++i) {
+//         cout << "P" << ganttChart[i];
+//         if (i != ganttChart.size() - 1) {
+//             cout << " -> ";  
+//         }
+//     }
+//     cout << endl;
+// }
+
+// // Round Robin Scheduling
+// void RoundRobin(vector<Process>& processes, int timeQuantum) {
+//     int currentTime = 0;
+//     int completedProcesses = 0;
+//     int n = processes.size();
+//     queue<int> processQueue;  
+//     vector<int> ganttChart;  
+
+//     // Initializing the remaining time for each process
+//     for (int i = 0; i < n; i++) {
+//         processes[i].remainingTime = processes[i].burstTime;
+//     }
+
+//     // Start with the first arriving process
+//     for (int i = 0; i < n; i++) {
+//         if (processes[i].arrivalTime <= currentTime) {
+//             processQueue.push(i);
+//         }
+//     }
+
+//     while (completedProcesses < n) {
+//         // If there are no processes in the queue, increment time
+//         if (processQueue.empty()) {
+//             currentTime++;
+//             // Check for newly arrived processes
+//             for (int i = 0; i < n; i++) {
+//                 if (processes[i].arrivalTime <= currentTime && !processes[i].completed) {
+//                     processQueue.push(i);
+//                 }
+//             }
+//             continue;
+//         }
+
+//         int currentProcessIdx = processQueue.front();
+//         processQueue.pop();
+
+//         // Record the process in Gantt chart
+//         ganttChart.push_back(processes[currentProcessIdx].id);
+
+//         // Execute the process for the time quantum or until it finishes
+//         if (processes[currentProcessIdx].remainingTime > timeQuantum) {
+//             currentTime += timeQuantum;
+//             processes[currentProcessIdx].remainingTime -= timeQuantum;
+//         } else {
+//             currentTime += processes[currentProcessIdx].remainingTime; // Add remaining time to current time
+//             processes[currentProcessIdx].remainingTime = 0; // Process finishes
+//             processes[currentProcessIdx].finishTime = currentTime; // Set finish time
+//             processes[currentProcessIdx].turnaroundTime = processes[currentProcessIdx].finishTime - processes[currentProcessIdx].arrivalTime; // TAT = FT - AT
+//             processes[currentProcessIdx].waitingTime = processes[currentProcessIdx].turnaroundTime - processes[currentProcessIdx].burstTime; // WT = TAT - BT
+//             processes[currentProcessIdx].completed = true; // Mark process as completed
+//             completedProcesses++;
+//         }
+
+//         // Check for newly arrived processes after executing the current process
+//         for (int i = 0; i < n; i++) {
+//             if (processes[i].arrivalTime <= currentTime && !processes[i].completed && processes[i].remainingTime > 0) {
+//                 processQueue.push(i);
+//             }
+//         }
+
+//         // If the current process is not completed, push it back to the queue
+//         if (processes[currentProcessIdx].remainingTime > 0) {
+//             processQueue.push(currentProcessIdx);
+//         }
+//     }
+
+//     displayResults(processes);  
+//     displayGanttChart(ganttChart); 
+// }
+
+// int main() {
+//     int numProcesses, timeQuantum;
+//     cout << "Enter the number of processes: ";
+//     cin >> numProcesses;
+
+//     vector<Process> processes(numProcesses);
+
+//     // Input arrival time and burst time for each process
+//     for (int i = 0; i < numProcesses; i++) {
+//         cout << "Enter Arrival Time and Burst Time for process " << i + 1 << ": ";
+//         processes[i].id = i + 1;
+//         cin >> processes[i].arrivalTime >> processes[i].burstTime;
+//     }
+
+//     cout << "Enter the time quantum: ";
+//     cin >> timeQuantum;
+
+//     // Perform Round Robin Scheduling
+//     RoundRobin(processes, timeQuantum);
+
+//     return 0;
+// }
+
+
+/*
+3
+0 5
+1 3
+2 8
+*/
+
+---------------------------------------------------------------------------------------------
+
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <algorithm>
+#include <iomanip>
+
+void calculateCSCAN(std::vector<int>& requests, int n, int initial_head, int disk_size, int direction) {
+    int total_seek_time = 0;
+    int current_head = initial_head;
+
+    // Sort the requests in ascending order
+    std::sort(requests.begin(), requests.end());
+
+    // Find the starting index where the head should start servicing requests
+    int start_index = 0;
+    while (start_index < n && requests[start_index] < initial_head) {
+        start_index++;
+    }
+
+    std::cout << "\nDisk Scheduling using C-SCAN Algorithm:\n";
+    std::cout << "------------------------------------------------\n";
+    std::cout << "| Request No. |  Request   |  Seek Time      |\n";
+    std::cout << "------------------------------------------------\n";
+
+    // Move in the selected direction
+    if (direction == 1) {  // Moving right towards higher values
+        // Service requests to the right of the initial head position
+        for (int i = start_index; i < n; i++) {
+            int seek_time = std::abs(requests[i] - current_head);
+            total_seek_time += seek_time;
+            std::cout << "|      " << std::setw(2) << i - start_index + 1 << "      |    " << std::setw(3) << requests[i] << "     |     " << std::setw(3) << seek_time << "        |\n";
+            current_head = requests[i];
+        }
+
+        // Move to the end of the disk and then jump to the start
+        if (current_head < disk_size - 1) {
+            int end_seek_time = std::abs(disk_size - 1 - current_head);
+            total_seek_time += end_seek_time;
+            std::cout << "|      -       |   " << std::setw(3) << disk_size - 1 << "     |     " << std::setw(3) << end_seek_time << "        |\n";
+        }
+        int reset_seek_time = disk_size - 1;  // Jump from end to start
+        total_seek_time += reset_seek_time;
+        std::cout << "|      -       |     0     |     " << std::setw(3) << reset_seek_time << "        |\n";
+        current_head = 0;
+
+        // Continue servicing the remaining requests from the start
+        for (int i = 0; i < start_index; i++) {
+            int seek_time = std::abs(requests[i] - current_head);
+            total_seek_time += seek_time;
+            std::cout << "|      " << std::setw(2) << i + n - start_index + 1 << "      |    " << std::setw(3) << requests[i] << "     |     " << std::setw(3) << seek_time << "        |\n";
+            current_head = requests[i];
+        }
+    } else {  // Moving left towards lower values
+        // Service requests to the left of the initial head position
+        for (int i = start_index - 1; i >= 0; i--) {
+            int seek_time = std::abs(requests[i] - current_head);
+            total_seek_time += seek_time;
+            std::cout << "|      " << std::setw(2) << start_index - i << "      |    " << std::setw(3) << requests[i] << "     |     " << std::setw(3) << seek_time << "        |\n";
+            current_head = requests[i];
+        }
+
+        // Move to the start of the disk and then jump to the end
+        if (current_head > 0) {
+            int start_seek_time = std::abs(current_head - 0);
+            total_seek_time += start_seek_time;
+            std::cout << "|      -       |     0     |     " << std::setw(3) << start_seek_time << "        |\n";
+        }
+        int reset_seek_time = disk_size - 1;  // Jump from start to end
+        total_seek_time += reset_seek_time;
+        std::cout << "|      -       |   " << std::setw(3) << disk_size - 1 << "     |     " << std::setw(3) << reset_seek_time << "        |\n";
+        current_head = disk_size - 1;
+
+        // Continue servicing the remaining requests from the end
+        for (int i = n - 1; i >= start_index; i--) {
+            int seek_time = std::abs(requests[i] - current_head);
+            total_seek_time += seek_time;
+            std::cout << "|      " << std::setw(2) << n - i << "      |    " << std::setw(3) << requests[i] << "     |     " << std::setw(3) << seek_time << "        |\n";
+            current_head = requests[i];
+        }
+    }
+
+    std::cout << "------------------------------------------------\n";
+    std::cout << "Total Seek Time: " << total_seek_time << "\n"; // Display total seek time
+}
+
+int main() {
+    int n, initial_head, disk_size, direction;
+
+    // Accept number of requests and initial head position
+    std::cout << "Enter the number of disk requests: ";
+    std::cin >> n;
+
+    std::vector<int> requests(n);
+    std::cout << "Enter the disk size: ";
+    std::cin >> disk_size;
+
+    std::cout << "Enter the initial head position: ";
+    std::cin >> initial_head;
+
+    std::cout << "Enter the direction (1 for right, 0 for left): ";
+    std::cin >> direction;
+
+    std::cout << "Enter the disk requests: \n";
+    for (int i = 0; i < n; i++) {
+        std::cout << "Request " << i + 1 << ": ";
+        std::cin >> requests[i];
+    }
+
+    // Calculate and display the C-SCAN scheduling
+    calculateCSCAN(requests, n, initial_head, disk_size, direction);
+
+    return 0;
+}
+
+
+/*
+6
+200
+50
+1
+176
+79
+34
+60
+92
+11
+*/
+
+------------------------------------------------------------------------------------------
+
+#include <iostream>
+#include <vector>
+using namespace std;
+
+// Function to check if the system is in a safe state (i.e., no deadlock)
+bool is_safe(const vector<int>& available, const vector<vector<int>>& allocation, 
+             const vector<vector<int>>& request, vector<bool>& finish, int n, int r) {
+    vector<int> work = available;  // Initialize work as available resources
+    finish.assign(n, false);  // Initially no processes are finished
+
+    while (true) {
+        bool progress_made = false;
+
+        for (int i = 0; i < n; i++) {
+            if (!finish[i]) {
+                bool can_execute = true;
+
+                // Check if all requested resources are less than or equal to available resources
+                for (int j = 0; j < r; j++) {
+                    if (request[i][j] > work[j]) {
+                        can_execute = false;
+                        break;
+                    }
+                }
+
+                // If the process can be executed
+                if (can_execute) {
+                    for (int j = 0; j < r; j++) {
+                        work[j] += allocation[i][j];  // Simulate resource release by adding allocated resources back to work
+                    }
+                    finish[i] = true;  // Mark process as finished
+                    progress_made = true;
+                    break;
+                }
+            }
+        }
+
+        if (!progress_made) {
+            break;  // No progress was made, so break out of the loop
+        }
+    }
+
+    // If any process is not finished, return false (deadlock detected)
+    for (int i = 0; i < n; i++) {
+        if (!finish[i]) {
+            return false;
+        }
+    }
+
+    return true;  // All processes finished, no deadlock
+}
+
+int main() {
+    int n, r;
+    
+    // Input the number of processes and resources
+    cout << "Enter the number of processes: ";
+    cin >> n;
+    cout << "Enter the number of resources: ";
+    cin >> r;
+
+    vector<vector<int>> allocation(n, vector<int>(r)), request(n, vector<int>(r));
+    vector<int> available(r);
+
+    // Input the allocation matrix
+    cout << "\nEnter the Allocation Matrix (" << n << " x " << r << "):\n";
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < r; j++) {
+            cin >> allocation[i][j];
+        }
+    }
+
+    // Input the request matrix
+    cout << "\nEnter the Request Matrix (" << n << " x " << r << "):\n";
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < r; j++) {
+            cin >> request[i][j];
+        }
+    }
+
+    // Input available resources
+    cout << "\nEnter the Available Resources (" << r << " values):\n";
+    for (int i = 0; i < r; i++) {
+        cin >> available[i];
+    }
+
+    // Call the deadlock detection function
+    vector<bool> finish(n);
+    if (is_safe(available, allocation, request, finish, n, r)) {
+        cout << "\nNo deadlock detected.\n";
+    } else {
+        cout << "\nDeadlock detected.\n";
+    }
+
+    return 0;
+}
+
+
+/*
+5
+3
+0 1 0
+2 0 0
+3 0 3
+2 1 1
+0 0 2
+0 1 0
+2 0 0
+3 0 3
+2 1 1
+0 0 2
+0 0 0
+1 0 2
+1 1 0
+0 2 2
+1 1 1
+3 3 2
+*/
+
+-----------------------------------------------------------------------------------------
+
+#include <iostream>
+#include <thread>
+#include <mutex>
+#include <vector>
+#include <chrono>
+
+using namespace std;
+
+#define N 5
+
+mutex forks[N];  // Mutexes for each fork
+
+void philosopher(int id) {
+    for (int i = 0; i < 3; i++) {
+        cout << "Philosopher " << id << " is thinking.\n";
+        this_thread::sleep_for(chrono::microseconds(100000));
+
+        // Try to pick up forks (mutex locking)
+        unique_lock<mutex> left_fork_lock(forks[id]);  // Lock left fork
+        unique_lock<mutex> right_fork_lock(forks[(id + 1) % N]);  // Lock right fork
+
+        cout << "Philosopher " << id << " is eating.\n";
+        this_thread::sleep_for(chrono::microseconds(100000));
+
+        // Finished eating, release forks (unlock)
+        cout << "Philosopher " << id << " finished eating.\n";
+    }
+}
+
+int main() {
+    vector<thread> philosophers;
+    
+    // Create philosopher threads
+    for (int i = 0; i < N; i++) {
+        philosophers.push_back(thread(philosopher, i));
+    }
+
+    // Wait for all threads to finish
+    for (auto& t : philosophers) {
+        t.join();
+    }
+
+    return 0;
+}
+
+----------------------------------------------------------------------------------------
+
+//disk FCFS
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <iomanip>
+
+using namespace std;
+
+// Function to calculate the FCFS disk scheduling
+void calculateFCFS(vector<int>& requests, int n, int initial_head) {
+    int total_seek_time = 0;
+    int current_head = initial_head;
+
+    cout << "\nDisk Scheduling using FCFS Algorithm:\n";
+    cout << "------------------------------------------------------\n";
+    cout << "| Request No. |  Request   |  Seek Time      |\n";
+    cout << "------------------------------------------------------\n";
+
+    // Process each request in the order they are received
+    for (int i = 0; i < n; i++) {
+        int seek_time = abs(requests[i] - current_head);
+        total_seek_time += seek_time;
+        current_head = requests[i];
+
+        cout << "|      " << i + 1 << "      |    " << requests[i] 
+             << "     |     " << seek_time << "        |\n";
+    }
+
+    cout << "------------------------------------------------------\n";
+    cout << "Total Seek Time: " << total_seek_time << endl; // Display total seek time
+}
+
+int main() {
+    int n, initial_head;
+
+    // Accept number of requests and initial head position
+    cout << "Enter the number of disk requests: ";
+    cin >> n;
+
+    vector<int> requests(n);
+    cout << "Enter the initial head position: ";
+    cin >> initial_head;
+
+    cout << "Enter the disk requests: \n";
+    for (int i = 0; i < n; i++) {
+        cout << "Request " << i + 1 << ": ";
+        cin >> requests[i];
+    }
+
+    // Calculate and display the FCFS scheduling
+    calculateFCFS(requests, n, initial_head);
+
+    return 0;
+}
+
+
+/*
+5
+50
+70 
+20
+90 
+40 
+60
+*/
+
+-------------------------------------------------------------------------------------------
+
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+
+using namespace std;
+
+class Memory {
+public:
+    // Load instructions into main memory
+    void loadInstructions(const vector<string>& instructions) {
+        mainMemory = instructions;
+    }
+
+    // Display the contents of main memory
+    void displayMemory() const {
+        cout << "Contents of Main Memory:" << endl;
+        for (int i = 0; i < mainMemory.size(); ++i) {
+            cout << "Address " << i << ": " << mainMemory[i] << endl;
+        }
+    }
+
+private:
+    vector<string> mainMemory; // Simulated main memory
+};
+
+class Loader {
+public:
+    // Load ALP program from file into memory
+    bool loadProgram(const string& filename, Memory& memory) {
+        ifstream inputFile(filename);
+        if (!inputFile) {
+            cerr << "Error: Cannot open file " << filename << endl;
+            return false;
+        }
+
+        vector<string> instructions;
+        string line;
+        
+        // Read each line from the file and store it in the instructions vector
+        while (getline(inputFile, line)) {
+            instructions.push_back(line);
+        }
+
+        // Load instructions into memory
+        memory.loadInstructions(instructions);
+        inputFile.close();
+        return true;
+    }
+};
+
+int main() {
+    Memory memory;
+    Loader loader;
+    string filename = "program.alp"; // Name of the ALP file
+
+    // Load the program
+    if (loader.loadProgram(filename, memory)) {
+        // Display the contents of memory after loading
+        memory.displayMemory();
+    } else {
+        cerr << "Failed to load program." << endl;
+    }
+
+    return 0;
+}
+
+
+// program.alp
+// MOV R1, 5
+// ADD R1, R2
+// SUB R3, R1
+
+----------------------------------------------------------------------------------------------
+
+#include <iostream>
+#include <pthread.h>
+
+
+const int MATRIX_SIZE = 3;
+
+int matrixA[MATRIX_SIZE][MATRIX_SIZE], matrixB[MATRIX_SIZE][MATRIX_SIZE], result[MATRIX_SIZE][MATRIX_SIZE];
+
+
+
+struct ThreadData {
+
+    int row;
+
+    int col;
+
+};
+
+
+
+void* multiply(void* arg) {
+
+    ThreadData* data = (ThreadData*)arg;
+
+    int row = data->row;
+
+    int col = data->col;
+
+    result[row][col] = 0;
+
+
+
+    for (int i = 0; i < MATRIX_SIZE; ++i) {
+
+        result[row][col] += matrixA[row][i] * matrixB[i][col];
+
+    }
+
+
+
+    pthread_exit(nullptr);
+
+}
+
+
+
+void* add(void* arg) {
+
+    ThreadData* data = (ThreadData*)arg;
+
+    int row = data->row;
+
+    int col = data->col;
+
+    result[row][col] = matrixA[row][col] + matrixB[row][col];
+
+
+
+    pthread_exit(nullptr);
+
+}
+
+
+
+void* subtract(void* arg) {
+
+    ThreadData* data = (ThreadData*)arg;
+
+    int row = data->row;
+
+    int col = data->col;
+
+    result[row][col] = matrixA[row][col] - matrixB[row][col];
+
+
+
+    pthread_exit(nullptr);
+
+}
+
+
+
+void inputMatrix(int matrix[MATRIX_SIZE][MATRIX_SIZE], char name) {
+
+    std::cout << "Enter elements of Matrix " << name << " (3x3):\n";
+
+    for (int i = 0; i < MATRIX_SIZE; ++i) {
+
+        for (int j = 0; j < MATRIX_SIZE; ++j) {
+
+            std::cin >> matrix[i][j];
+
+        }
+
+    }
+
+}
+
+
+
+void displayMatrix(int matrix[MATRIX_SIZE][MATRIX_SIZE]) {
+
+    for (int i = 0; i < MATRIX_SIZE; ++i) {
+
+        for (int j = 0; j < MATRIX_SIZE; ++j) {
+
+            std::cout << matrix[i][j] << " ";
+
+        }
+
+        std::cout << std::endl;
+
+    }
+
+}
+
+
+
+void performOperation(void* (*operation)(void*)) {
+
+    pthread_t threads[MATRIX_SIZE][MATRIX_SIZE];
+
+    ThreadData threadData[MATRIX_SIZE][MATRIX_SIZE];
+
+
+
+    for (int i = 0; i < MATRIX_SIZE; ++i) {
+
+        for (int j = 0; j < MATRIX_SIZE; ++j) {
+
+            threadData[i][j].row = i;
+
+            threadData[i][j].col = j;
+
+            pthread_create(&threads[i][j], nullptr, operation, (void*)&threadData[i][j]);
+
+        }
+
+    }
+
+
+
+    for (int i = 0; i < MATRIX_SIZE; ++i) {
+
+        for (int j = 0; j < MATRIX_SIZE; ++j) {
+
+            pthread_join(threads[i][j], nullptr);
+
+        }
+
+    }
+
+}
+
+
+
+int main() {
+
+    inputMatrix(matrixA, 'A');
+
+    inputMatrix(matrixB, 'B');
+
+
+
+    int choice;
+
+    std::cout << "Choose the operation:\n1. Multiplication\n2. Addition\n3. Subtraction\n";
+
+    std::cin >> choice;
+
+
+
+    switch (choice) {
+
+        case 1:
+
+            performOperation(multiply);
+
+            std::cout << "Resultant Matrix after Multiplication:\n";
+
+            displayMatrix(result);
+
+            break;
+
+        case 2:
+
+            performOperation(add);
+
+            std::cout << "Resultant Matrix after Addition:\n";
+
+            displayMatrix(result);
+
+            break;
+
+        case 3:
+
+            performOperation(subtract);
+
+            std::cout << "Resultant Matrix after Subtraction:\n";
+
+            displayMatrix(result);
+
+            break;
+
+        default:
+
+            std::cout << "Invalid choice!\n";
+
+    }
+
+
+
+    return 0;
+
+}
+
+
+-----------------------------------------------------------------------------------------------
+
+#include <iostream>
+#include <string>
+#include <vector>
+#include <sstream>
+
+using namespace std;
+
+int TTL;  // Total Time Limit
+int TI = 0;  // Time Interrupt
+int PI = 0;  // Program Interrupt
+
+vector<string> instructions;  // Vector to store instructions
+
+// Function to parse the job and initialize TTL
+void parseJob(const string& jobLine) {
+    // Parse TTL from the job line (characters 9-12, zero-indexed)
+    TTL = stoi(jobLine.substr(8, 4));
+    cout << "TTL (Total Time Limit) = " << TTL << endl;
+}
+
+// Function to check opcodes and set PI if there are errors
+void checkOpcodesAndSetPI() {
+    for (const auto& instruction : instructions) {
+        // Check if opcode is valid (GD, PD, LR, SR, etc.)
+        string opcode = instruction.substr(0, 2);
+        if (opcode != "GD" && opcode != "PD" && opcode != "LR" &&
+            opcode != "SR" && opcode != "CR" && opcode != "BT" && opcode != "H") {
+            PI = 1;  // Invalid opcode found
+            break;
+        }
+    }
+}
+
+// Function to calculate TI based on TTL and number of instructions
+void calculateTI() {
+    if (instructions.size() > TTL) {
+        TI = 2;  // Exceeded TTL
+    } else {
+        TI = 0;
+    }
+}
+
+// Mock function for MOS to print error message based on TI and PI
+void MOS() {
+    if (PI == 1) {
+        cout << "Program Interrupt: Invalid Opcode" << endl;
+    }
+    if (TI == 2) {
+        cout << "Time Interrupt: Exceeded TTL" << endl;
+    }
+    if (TI == 0 && PI == 0) {
+        cout << "Program executed successfully within TTL and with valid opcodes." << endl;
+    }
+}
+
+// Main program to simulate the execution
+int main() {
+    string jobLine;
+    
+    // Get the job line input from the user
+    cout << "Enter the job line: ";
+    getline(cin, jobLine);
+
+    // Parse the job to extract TTL
+    parseJob(jobLine);
+
+    // Get instructions input from the user
+    string instructionLine;
+    cout << "Enter instructions (separate each by space): ";
+    getline(cin, instructionLine);
+
+    // Split the instruction line into individual instructions and store them
+    stringstream ss(instructionLine);
+    string instruction;
+    while (ss >> instruction) {
+        instructions.push_back(instruction);
+    }
+
+    // Check opcodes for validity and set PI if needed
+    checkOpcodesAndSetPI();
+
+    // Calculate TI based on TTL and the number of instructions
+    calculateTI();
+
+    // Call MOS to print appropriate message based on TI and PI values
+    MOS();
+
+    return 0;
+}
+
+
+// input
+// $AMJ040300040002
+// GD30 PD30 LR30 SR40 PS40 H
+// $DTA
+// SHE SELLS   SEA SHELLS ON
+// SHORE
+// $END0403
+
+
+
+--------------------------------------------------------------------------------------
+
+#include <iostream>
+#include <sstream>
+#include <vector>
+#include <string>
+#include <cctype>  //isdigit()
+
+using namespace std;
+
+// Function to check if the operand is valid
+bool isValidOperand(const string& operand) {
+    // Operand must be 2 digits and between 00 and 99
+    if (operand.length() == 2 && isdigit(operand[0]) && isdigit(operand[1])) {
+        int num = stoi(operand);  // Convert operand to integer
+        return (num >= 0 && num <= 99);
+    }
+    return false;
+}
+
+// Function to check for operand errors in the instructions
+void checkOperandErrors(const string& instructionLine) {
+    stringstream ss(instructionLine);
+    string instruction;
+    int programInterrupt = 0;  // Default: No error
+
+    while (ss >> instruction) {
+        if (instruction == "H") {
+            // Halt instruction should not have any operand
+            if (ss >> instruction) {
+                // If there's an operand after halt, it's an error
+                programInterrupt = 2;
+                cout << "Operand error: Operand found for halt instruction 'H'!" << endl;
+                break;
+            }
+        } else {
+            // Check if the instruction has a valid operand (should be 2 digits between 00 and 99)
+            string operand = instruction.substr(2);  // Get the operand part (after the first 2 characters)
+            if (!isValidOperand(operand)) {
+                programInterrupt = 2;
+                cout << "Operand error: Invalid operand in instruction '" << instruction << "'!" << endl;
+                break;
+            }
+        }
+    }
+
+    // If there's no error, print that the job has no operand errors
+    if (programInterrupt == 0) {
+        cout << "No operand errors detected." << endl;
+    }
+}
+
+int main() {
+    string job;
+    cout << "Enter the job instruction line: "<<endl;
+    getline(cin, job);  // Read the job input from the user
+
+    checkOperandErrors(job);  // Check for operand errors
+
+    return 0;
+}
+
+
+// input
+// GD30 PDxy LR30 SR40 PS40 H
+
+--------------------------------------------------------------------------------------------
+
+#include <iostream>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <cstdlib>
+
+using namespace std;
+
+void createZombieProcess() {
+    pid_t pid = fork();
+
+    if (pid < 0) {
+        perror("Fork failed");
+        exit(1);
+    }
+
+    if (pid > 0) {  // Parent process
+        cout << "Parent process: Zombie process created. PID = " << pid << endl;
+        // No sleep here, but we need to wait for a while to allow the child to ex  
+        sleep(2);  // Short sleep to simulate time for the zombie process
+    } else {  // Child process
+        cout << "Child process exiting to become zombie." << endl;
+        exit(0);  // Child exits, becoming a zombie
+    }
+}
+
+void createOrphanProcess() {
+    pid_t pid = fork();
+
+    if (pid < 0) {
+        perror("Fork failed");
+        exit(1);
+    }
+
+    if (pid > 0) {  // Parent process
+        cout << "Parent process exiting to create orphan process." << endl;
+        exit(0);  // Parent exits, child becomes orphan
+    } else {  // Child process
+        sleep(1);  // Allow the orphan to exist for a while
+        cout << "Child process (orphan) continuing after parent termination. PID = " << getpid() << endl;
+    }
+}
+
+void sumEvenOdd(int arr[], int size) {
+    pid_t pid = fork();
+
+    if (pid < 0) {
+        perror("Fork failed");
+        exit(1);
+    }
+
+    if (pid > 0) {  // Parent process
+        int evenSum = 0;
+        for (int i = 0; i < size; i++) {
+            if (arr[i] % 2 == 0) {
+                evenSum += arr[i];
+            }
+        }
+        cout << "Parent process: Sum of even numbers = " << evenSum << endl;
+        wait(NULL);  // Wait for the child process to finish
+    } else {  // Child process
+        int oddSum = 0;
+        for (int i = 0; i < size; i++) {
+            if (arr[i] % 2 != 0) {
+                oddSum += arr[i];
+            }
+        }
+        cout << "Child process: Sum of odd numbers = " << oddSum << endl;
+        exit(0);
+    }
+}
+
+int main() {
+    int arr[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};  // Array of integers
+    int size = sizeof(arr) / sizeof(arr[0]);
+
+    cout << "Calculating sum of even and odd numbers:" << endl;
+    sumEvenOdd(arr, size);
+
+    cout << "\nCreating a zombie process:" << endl;
+    createZombieProcess();
+
+    cout << "\nCreating an orphan process:" << endl;
+    createOrphanProcess();
+
+    return 0;
+}
+
+----------------------------------------------------------------------------------------------
+
+
+#include <iostream>
+#include <vector>
+#include <unordered_map>
+#include <algorithm>
+using namespace std;
+
+bool isPageInMemory(vector<int>& memory, int page) {
+    return find(memory.begin(), memory.end(), page) != memory.end();
+}
+
+int fifoPageFaults(vector<int>& pages, int frames) {
+    vector<int> memory;
+    int pageFaults = 0;
+
+    for (int page : pages) {
+        if (!isPageInMemory(memory, page)) {
+            if (memory.size() == frames) {
+                memory.erase(memory.begin()); // Remove the first inserted page
+            }
+            memory.push_back(page); // Insert new page
+            pageFaults++;
+        }
+    }
+    return pageFaults;
+}
+
+int lruPageFaults(vector<int>& pages, int frames) {
+    vector<int> memory;
+    unordered_map<int, int> recentUse; // To track when pages were last used
+    int pageFaults = 0;
+
+    for (int i = 0; i < pages.size(); i++) {
+        int page = pages[i];
+        if (!isPageInMemory(memory, page)) {
+            if (memory.size() == frames) {
+                // Find least recently used page
+                int lruPage = *min_element(memory.begin(), memory.end(), 
+                    [&](int a, int b) { return recentUse[a] < recentUse[b]; });
+                memory.erase(find(memory.begin(), memory.end(), lruPage));
+            }
+            memory.push_back(page); // Insert new page
+            pageFaults++;
+        }
+        recentUse[page] = i; // Update recent use for the current page
+    }
+    return pageFaults;
+}
+
+int optimalPageFaults(vector<int>& pages, int frames) {
+    vector<int> memory;
+    int pageFaults = 0;
+
+    for (int i = 0; i < pages.size(); i++) {
+        int page = pages[i];
+        if (!isPageInMemory(memory, page)) {
+            if (memory.size() == frames) {
+                int furthestPageIndex = -1;
+                int replaceIndex = -1;
+
+                // Find the page in memory that won't be used for the longest time
+                for (int j = 0; j < memory.size(); j++) {
+                    int nextUse = find(pages.begin() + i + 1, pages.end(), memory[j]) - pages.begin();
+                    if (nextUse > furthestPageIndex) {
+                        furthestPageIndex = nextUse;
+                        replaceIndex = j;
+                    }
+                    if (nextUse == pages.size()) break; // Page won't be used again
+                }
+                memory[replaceIndex] = page;
+            } else {
+                memory.push_back(page); // Insert new page
+            }
+            pageFaults++;
+        }
+    }
+    return pageFaults;
+}
+
+int main() {
+    int frames;
+    vector<int> pages;
+    int n, page;
+
+    // Input number of frames
+    cout << "Enter number of frames: ";
+    cin >> frames;
+
+    // Input number of pages and the reference string
+    cout << "Enter number of pages: ";
+    cin >> n;
+    cout << "Enter the reference string: ";
+    for (int i = 0; i < n; i++) {
+        cin >> page;
+        pages.push_back(page);
+    }
+
+    // Calculate page faults for FIFO, LRU, and Optimal
+    cout << "FIFO Page Faults: " << fifoPageFaults(pages, frames) << endl;
+    cout << "LRU Page Faults: " << lruPageFaults(pages, frames) << endl;
+    cout << "Optimal Page Faults: " << optimalPageFaults(pages, frames) << endl;
+
+    return 0;
+}
+
+
+// input
+/*
+3
+9
+7 0 1 2 0 3 0 4 2
+*/
+
+
+---------------------------------------------------------------------------------------------
+
+// prod cons mutux
+#include <iostream>
+#include <thread>
+#include <queue>
+#include <mutex>
+#include <condition_variable>
+#include <chrono>
+#include <iomanip>
+
+// Shared buffer and synchronization primitives
+std::queue<int> buffer;
+const unsigned int BUFFER_SIZE = 5;
+std::mutex buffer_mutex;
+std::condition_variable cv_producer, cv_consumer;  // Condition variables for signaling
+
+// Helper function to print table-like formatted output
+void print_table(const std::string& action, const std::string& producer_consumer, int item) {
+    std::cout << "| " << std::setw(22) << std::left << action
+              << "| " << std::setw(15) << std::left << producer_consumer
+              << "| " << std::setw(5) << std::left << item << "|\n";
+}
+
+void producer(int producer_id, int max_items) {
+    int item = 0;
+    for (int i = 0; i < max_items; ++i) {
+        item++;
+        std::unique_lock<std::mutex> lock(buffer_mutex);
+
+        // Wait if the buffer is full
+        cv_producer.wait(lock, [] { return buffer.size() < BUFFER_SIZE; });
+
+        // Critical section (producing)
+        buffer.push(item);
+        print_table("Produced item", "Producer " + std::to_string(producer_id), item);
+
+        lock.unlock(); // Unlock before notifying
+        cv_consumer.notify_one(); // Notify consumer that an item is available
+    }
+}
+
+void consumer(int consumer_id, int max_items) {
+    for (int i = 0; i < max_items; ++i) {
+        std::unique_lock<std::mutex> lock(buffer_mutex);
+
+        // Wait if the buffer is empty
+        cv_consumer.wait(lock, [] { return !buffer.empty(); });
+
+        // Critical section (consuming)
+        int item = buffer.front();
+        buffer.pop();
+        print_table("Consumed item", "Consumer " + std::to_string(consumer_id), item);
+
+        lock.unlock(); // Unlock before notifying
+        cv_producer.notify_one(); // Notify producer that a slot is available
+    }
+}
+
+int main() {
+    srand(time(0));
+    const int MAX_ITEMS = 6; // Limit the number of items produced and consumed
+
+    // Print table header
+    std::cout << "| " << std::setw(22) << std::left << "Action"
+              << "| " << std::setw(15) << std::left << "Producer/Consumer"
+              << "| " << std::setw(5) << std::left << "Item" << "|\n";
+    std::cout << std::string(50, '-') << "\n";
+
+    // Creating producer and consumer threads
+    std::thread producers[2], consumers[2];
+    for (int i = 0; i < 2; i++) {
+        producers[i] = std::thread(producer, i, MAX_ITEMS);
+        consumers[i] = std::thread(consumer, i, MAX_ITEMS);
+    }
+
+    // Joining threads (for demonstration purposes, these will run a fixed number of iterations)
+    for (int i = 0; i < 2; i++) {
+        producers[i].join();
+        consumers[i].join();
+    }
+
+    return 0;
+}
+
+----------------------------------------------------------------------------------------
+
+// prod cunumer sem
+#include <iostream>
+#include <thread>
+#include <queue>
+#include <chrono>
+#include <iomanip>
+#include <mutex>
+#include <condition_variable>
+
+class Semaphore {
+public:
+    Semaphore(int count = 0) : count(count) {}
+
+    void signal() {
+        std::unique_lock<std::mutex> lock(mutex_);
+        count++;
+        cv_.notify_one();
+    }
+
+    void wait() {
+        std::unique_lock<std::mutex> lock(mutex_);
+        while (count == 0) {
+            cv_.wait(lock);
+        }
+        count--;
+    }
+
+private:
+    std::mutex mutex_;
+    std::condition_variable cv_;
+    int count;
+};
+
+// Shared buffer and semaphores
+std::queue<int> buffer;
+const unsigned int BUFFER_SIZE = 5;
+Semaphore empty_slots(BUFFER_SIZE); // Controls how many empty slots are in the buffer
+Semaphore full_slots(0);            // Controls how many items are available in the buffer
+
+// Helper function to print table-like formatted output
+void print_table(const std::string& action, const std::string& producer_consumer, int item) {
+    std::cout << "| " << std::setw(22) << std::left << action
+              << "| " << std::setw(15) << std::left << producer_consumer
+              << "| " << std::setw(5) << std::left << item << "|\n";
+}
+
+void producer(int producer_id, int max_items) {
+    int item = 0;
+    for (int i = 0; i < max_items; ++i) {
+        item++;
+        empty_slots.wait();  // Wait for an empty slot in the buffer
+
+        // Critical section (producing)
+        buffer.push(item);
+        print_table("Produced item", "Producer " + std::to_string(producer_id), item);
+
+        full_slots.signal();  // Signal that a new item is available
+    }
+}
+
+void consumer(int consumer_id, int max_items) {
+    for (int i = 0; i < max_items; ++i) {
+        full_slots.wait();  // Wait for an available item
+
+        // Critical section (consuming)
+        int item = buffer.front();
+        buffer.pop();
+        print_table("Consumed item", "Consumer " + std::to_string(consumer_id), item);
+
+        empty_slots.signal();  // Signal that an empty slot is available
+    }
+}
+
+int main() {
+    srand(time(0));
+    const int MAX_ITEMS = 6; // Limit the number of items produced and consumed
+
+    // Print table header
+    std::cout << "| " << std::setw(22) << std::left << "Action"
+              << "| " << std::setw(15) << std::left << "Producer/Consumer"
+              << "| " << std::setw(5) << std::left << "Item" << "|\n";
+    std::cout << std::string(50, '-') << "\n";
+
+    // Creating producer and consumer threads
+    std::thread producers[2], consumers[2];
+    for (int i = 0; i < 2; i++) {
+        producers[i] = std::thread(producer, i, MAX_ITEMS);
+        consumers[i] = std::thread(consumer, i, MAX_ITEMS);
+    }
+
+    // Joining threads (for demonstration purposes, these will run a fixed number of iterations)
+    for (int i = 0; i < 2; i++) {
+        producers[i].join();
+        consumers[i].join();
+    }
+
+    return 0;
+}
+
+------------------------------------------------------------------------------------------------
+
+// reader mutex
+#include <iostream>
+#include <thread>
+#include <queue>
+#include <mutex>
+#include <condition_variable>
+#include <chrono>
+#include <iomanip>
+
+using namespace std;
+
+// Shared variables
+int read_count = 0;
+mutex buffer_mutex;
+condition_variable cv_reader, cv_writer;  // Condition variables for signaling
+
+void print_table(const string& action, const string& reader_writer, const string& state, const string& comment) {
+    std::cout << "| " << setw(22) << std::left << action
+              << "| " << setw(15) << std::left << reader_writer
+              << "| " << setw(20) << std::left << state
+              << "| " << setw(35) << std::left << comment << "|\n";
+}
+
+void reader(int reader_id) {
+    while (true) {
+        unique_lock<mutex> lock(buffer_mutex);
+        
+        // Entry section
+        if (read_count == 0) {
+            cv_writer.wait(lock);  // First reader waits for writers
+        }
+        
+        read_count++;  // Increment reader count
+
+        lock.unlock(); 
+        print_table("Reader is reading", "Reader " + to_string(reader_id), "Critical Section", "First reader entered");
+        this_thread::sleep_for(chrono::milliseconds(rand() % 500 + 100)); // Simulate reading
+        
+        lock.lock();  // Lock before updating reader count
+        read_count--;
+        
+        if (read_count == 0) {
+            cv_writer.notify_one();  // Last reader notifies writer
+        }
+        lock.unlock();  // Unlock after updating
+
+        print_table("Reader finished reading", "Reader " + to_string(reader_id), "Finished", "Reader finished reading");
+        this_thread::sleep_for(chrono::milliseconds(rand() % 1000 + 500)); // Simulate delay
+    }
+}
+
+void writer(int writer_id) {
+    while (true) {
+        print_table("Writer is trying", "Writer " + to_string(writer_id), "Waiting", "Waiting for readers to finish");
+        
+        unique_lock<mutex> lock(buffer_mutex);
+        
+        // Entry section
+        cv_writer.wait(lock, [] { return read_count == 0; });  // Wait until no readers are present
+        
+        // Critical section
+        print_table("Writer is writing", "Writer " + to_string(writer_id), "Critical Section", "Writer entered");
+        this_thread::sleep_for(chrono::milliseconds(rand() % 500 + 100)); // Simulate writing
+
+        lock.unlock();  // Unlock after writing
+        print_table("Writer finished writing", "Writer " + std::to_string(writer_id), "Finished", "Writer finished writing");
+        this_thread::sleep_for(std::chrono::milliseconds(rand() % 2000 + 1000)); // Simulate delay
+    }
+}
+
+int main() {
+    srand(time(0));
+
+    // Print table header
+    std::cout << "| " << setw(22) << left << "Action"
+              << "| " << setw(15) << left << "Reader/Writer"
+              << "| " << setw(20) << left << "State"
+              << "| " << setw(35) << left << "Comment" << "|\n";
+    cout << std::string(100, '-') << "\n";
+
+    // Creating reader and writer threads
+    thread readers[3], writers[2];
+    for (int i = 0; i < 3; i++) {
+        readers[i] = thread(reader, i);
+    }
+    for (int i = 0; i < 2; i++) {
+        writers[i] = thread(writer, i);
+    }
+
+    for (int i = 0; i < 3; i++) {
+        readers[i].join();
+    }
+    for (int i = 0; i < 2; i++) {
+        writers[i].join();
+    }
+
+    return 0;
+}
+
+
+---------------------------------------------------------------------------------------------
+
+// reader semaphores
+
+#include <iostream>
+#include <thread>
+#include <chrono>
+#include <iomanip>
+#include <queue>
+#include <condition_variable>
+#include <mutex>
+
+class Semaphore {
+public:
+    Semaphore(int count = 0) : count(count) {}
+
+    void signal() {
+        std::unique_lock<std::mutex> lock(mutex_);
+        count++;
+        cv_.notify_one();
+    }
+
+    void wait() {
+        std::unique_lock<std::mutex> lock(mutex_);
+        while (count == 0) {
+            cv_.wait(lock);
+        }
+        count--;
+    }
+
+private:
+    std::mutex mutex_;
+    std::condition_variable cv_;
+    int count;
+};
+
+// Shared variables
+int read_count = 0;
+Semaphore read_count_sem(1);  // Semaphore for protecting read_count
+Semaphore write_sem(1);        // Semaphore for writer access
+
+// Helper function to print table-like formatted output
+void print_table(const std::string& action, const std::string& reader_writer, const std::string& state, const std::string& comment) {
+    std::cout << "| " << std::setw(22) << std::left << action
+              << "| " << std::setw(15) << std::left << reader_writer
+              << "| " << std::setw(20) << std::left << state
+              << "| " << std::setw(35) << std::left << comment << "|\n";
+}
+
+void reader(int reader_id) {
+    while (true) {
+        // Entry section
+        read_count_sem.wait();  // Lock to update read_count
+        read_count++;
+        
+        if (read_count == 1) {
+            write_sem.wait();  // First reader locks the writer
+        }
+        
+        read_count_sem.signal();  // Unlock read_count_sem
+
+        // Critical section
+        print_table("Reader is reading", "Reader " + std::to_string(reader_id), "Critical Section", "First reader entered");
+        std::this_thread::sleep_for(std::chrono::milliseconds(rand() % 500 + 100)); // Simulate reading
+
+        // Exit section
+        read_count_sem.wait();  // Lock to update read_count
+        read_count--;
+        
+        if (read_count == 0) {
+            write_sem.signal();  // Last reader unlocks the writer
+        }
+        
+        read_count_sem.signal();  // Unlock read_count_sem
+
+        print_table("Reader finished reading", "Reader " + std::to_string(reader_id), "Finished", "Reader finished reading");
+        std::this_thread::sleep_for(std::chrono::milliseconds(rand() % 1000 + 500)); // Simulate delay
+    }
+}
+
+void writer(int writer_id) {
+    while (true) {
+        print_table("Writer is trying", "Writer " + std::to_string(writer_id), "Waiting", "Waiting for readers to finish");
+
+        // Entry section
+        write_sem.wait();  // Only one writer can access the critical section at a time
+
+        // Critical section
+        print_table("Writer is writing", "Writer " + std::to_string(writer_id), "Critical Section", "Writer entered");
+        std::this_thread::sleep_for(std::chrono::milliseconds(rand() % 500 + 100)); // Simulate writing
+
+        // Exit section
+        write_sem.signal();
+        print_table("Writer finished writing", "Writer " + std::to_string(writer_id), "Finished", "Writer finished writing");
+        std::this_thread::sleep_for(std::chrono::milliseconds(rand() % 2000 + 1000)); // Simulate delay
+    }
+}
+
+int main() {
+    srand(time(0));
+
+    // Print table header
+    std::cout << "| " << std::setw(22) << std::left << "Action"
+              << "| " << std::setw(15) << std::left << "Reader/Writer"
+              << "| " << std::setw(20) << std::left << "State"
+              << "| " << std::setw(35) << std::left << "Comment" << "|\n";
+    std::cout << std::string(100, '-') << "\n";
+
+    // Creating reader and writer threads
+    std::thread readers[3], writers[2];
+    for (int i = 0; i < 3; i++) {
+        readers[i] = std::thread(reader, i);
+    }
+    for (int i = 0; i < 2; i++) {
+        writers[i] = std::thread(writer, i);
+    }
+
+    // Joining threads (for demonstration purposes, these will run indefinitely)
+    for (int i = 0; i < 3; i++) {
+        readers[i].join();
+    }
+    for (int i = 0; i < 2; i++) {
+        writers[i].join();
+    }
+
+    return 0;
+}
+
+
+
+// #include <iostream>
+// #include <thread>
+// #include <mutex>
+// #include <vector>
+// #include <atomic>
+// #include <chrono>
+
+// using namespace std;
+
+// mutex wrt_mutex; // Mutex for controlling access to shared_data
+// mutex read_count_mutex; // Mutex for read_count
+// atomic<int> read_count(0); // Atomic read_count to prevent race conditions
+// int shared_data = 0;
+
+// void reader(int reader_id) {
+//     // Entry section
+//     {
+//         lock_guard<mutex> lock(read_count_mutex);
+//         read_count++;
+//         if (read_count == 1) {
+//             wrt_mutex.lock(); // First reader waits for writer to finish
+//         }
+//     }
+
+//     // Reading section
+//     cout << "Reader " << reader_id << ": read data = " << shared_data << endl;
+//     this_thread::sleep_for(chrono::microseconds(100000)); // Simulate reading time
+
+//     // Exit section
+//     {
+//         lock_guard<mutex> lock(read_count_mutex);
+//         read_count--;
+//         if (read_count == 0) {
+//             wrt_mutex.unlock(); // Last reader releases the writer lock
+//         }
+//     }
+// }
+
+// void writer(int writer_id) {
+//     wrt_mutex.lock(); // Writer locks shared data
+
+//     // Writing section
+//     shared_data += 1;
+//     cout << "Writer " << writer_id << ": wrote data = " << shared_data << endl;
+//     this_thread::sleep_for(chrono::microseconds(100000)); // Simulate writing time
+
+//     wrt_mutex.unlock(); // Writer releases the lock
+// }
+
+// int main() {
+//     const int num_readers = 5, num_writers = 2;
+//     vector<thread> readers, writers;
+
+//     // Create reader threads
+//     for (int i = 0; i < num_readers; ++i) {
+//         readers.push_back(thread(reader, i + 1));
+//     }
+
+//     // Create writer threads
+//     for (int i = 0; i < num_writers; ++i) {
+//         writers.push_back(thread(writer, i + 1));
+//     }
+
+//     // Join reader threads
+//     for (auto &r : readers) {
+//         r.join();
+//     }
+
+//     // Join writer threads
+//     for (auto &w : writers) {
+//         w.join();
+//     }
+
+//     return 0;
+// }
+
+
+
+------------------------------------------------------------------------------------------
+
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <algorithm>
+
+using namespace std;
+
+void calculateSCAN(vector<int>& requests, int n, int initial_head, int disk_size, int direction) {
+    int total_seek_time = 0;
+    int current_head = initial_head;
+
+    // Sort the requests in ascending order
+    sort(requests.begin(), requests.end());
+
+    // Find the starting point where the head should start servicing requests
+    int start_index = 0;
+    while (start_index < n && requests[start_index] < initial_head) {
+        start_index++;
+    }
+
+    cout << "\nDisk Scheduling using SCAN Algorithm:\n";
+    cout << "------------------------------------------------\n";
+    cout << "| Request No. |  Request   |  Seek Time      |\n";
+    cout << "------------------------------------------------\n";
+
+    // Move in the selected direction
+    if (direction == 1) {  // Moving right towards higher values
+        // Service requests to the right of the initial head position
+        for (int i = start_index; i < n; i++) {
+            int seek_time = abs(requests[i] - current_head);
+            total_seek_time += seek_time;
+            cout << "|      " << i - start_index + 1 << "      |    " << requests[i] << "     |     " << seek_time << "        |\n";
+            current_head = requests[i];
+        }
+
+        // Move to the end of the disk
+        int end_seek_time = abs(disk_size - 1 - current_head);
+        total_seek_time += end_seek_time;
+        cout << "|      -       |   " << disk_size - 1 << "     |     " << end_seek_time << "        |\n";
+        current_head = disk_size - 1;
+
+        // Reverse direction and service the remaining requests to the left
+        for (int i = start_index - 1; i >= 0; i--) {
+            int seek_time = abs(requests[i] - current_head);
+            total_seek_time += seek_time;
+            cout << "|      " << start_index - i + n - 1 << "      |    " << requests[i] << "     |     " << seek_time << "        |\n";
+            current_head = requests[i];
+        }
+    } else {  // Moving left towards lower values
+        // Service requests to the left of the initial head position
+        for (int i = start_index - 1; i >= 0; i--) {
+            int seek_time = abs(requests[i] - current_head);
+            total_seek_time += seek_time;
+            cout << "|      " << start_index - i << "      |    " << requests[i] << "     |     " << seek_time << "        |\n";
+            current_head = requests[i];
+        }
+
+        // Move to the start of the disk
+        int end_seek_time = abs(current_head - 0);
+        total_seek_time += end_seek_time;
+        cout << "|      -       |    0      |     " << end_seek_time << "        |\n";
+        current_head = 0;
+
+        // Reverse direction and service the remaining requests to the right
+        for (int i = start_index; i < n; i++) {
+            int seek_time = abs(requests[i] - current_head);
+            total_seek_time += seek_time;
+            cout << "|      " << i + 1 << "      |    " << requests[i] << "     |     " << seek_time << "        |\n";
+            current_head = requests[i];
+        }
+    }
+
+    cout << "------------------------------------------------\n";
+    cout << "Total Seek Time: " << total_seek_time << endl; // Display total seek time
+}
+
+int main() {
+    int n, initial_head, disk_size, direction;
+
+    // Accept number of requests and initial head position
+    cout << "Enter the number of disk requests: ";
+    cin >> n;
+
+    vector<int> requests(n);
+    cout << "Enter the disk size: ";
+    cin >> disk_size;
+
+    cout << "Enter the initial head position: ";
+    cin >> initial_head;
+
+    cout << "Enter the direction (1 for right, 0 for left): ";
+    cin >> direction;
+
+    cout << "Enter the disk requests: \n";
+    for (int i = 0; i < n; i++) {
+        cout << "Request " << i + 1 << ": ";
+        cin >> requests[i];
+    }
+
+    // Calculate and display the SCAN scheduling
+    calculateSCAN(requests, n, initial_head, disk_size, direction);
+
+    return 0;
+}
+
+
+/*
+8
+200
+50
+1
+176
+79
+34
+60
+92
+11
+14
+114
+*/
+
+---------------------------------------------------------------------------------------------
+
+1) Print Sum of Digits of a Given Number Using Command Line Argument 
+#!/bin/bash 
+if [ $# -eq 0 ]; then 
+echo "Usage: $0 <number>" 
+exit 1 
+fi 
+number=$1 
+sum=0 
+while [ $number -gt 0 ]; do 
+digit=$(( number % 10 )) 
+sum=$(( sum + digit )) 
+number=$(( number / 10 )) 
+done 
+echo "Sum of digits: $sum" 
+OUTPUT: 
+pratik@pratik-VirtualBox:~$ ./lab3.sh 123 
+Sum of digits: 6 
+PROGARM: 
+2) Shell Script Using Functions 
+#!/bin/bash 
+average() { 
+sum=0 
+count=$# 
+for num in "$@"; do 
+sum=$((sum + num)) 
+done 
+    avg=$(echo "scale=2; $sum / $count" | bc) 
+    echo "Average of given numbers: $avg" 
+} 
+ 
+max_digit() { 
+    num=$1 
+    max=0 
+    while [ $num -gt 0 ]; do 
+        digit=$((num % 10)) 
+        if [ $digit -gt $max ]; then 
+            max=$digit 
+        fi 
+        num=$((num / 10)) 
+    done 
+    echo "Maximum digit: $max" 
+} 
+ 
+min_digit() { 
+    num=$1 
+    min=9 
+    while [ $num -gt 0 ]; do 
+        digit=$((num % 10)) 
+        if [ $digit -lt $min ]; then 
+            min=$digit 
+        fi 
+        num=$((num / 10)) 
+    done 
+    echo "Minimum digit: $min" 
+} 
+ 
+read -p "Enter numbers separated by spaces: " -a numbers 
+average "${numbers[@]}" 
+ 
+read -p "Enter a number to find max and min digits: " number 
+max_digit $number 
+min_digit $number 
+ 
+OUTPUT: 
+pratik@pratik-VirtualBox:~$ ./lab3.sh 
+Enter numbers separated by spaces: 20 30 22 10 
+Average of given numbers: 20.50 
+Enter a number to find max and min digits: 3216978 
+Maximum digit: 9 
+Minimum digit: 1 
+ 
+PROGARM: 
+3) Perform Sorting on Given Array Elements 
+ 
+#!/bin/bash 
+ 
+read -p "Enter array elements separated by spaces: " -a array 
+ 
+# Bubble Sort 
+n=${#array[@]} 
+for ((i = 0; i < n; i++)); do 
+    for ((j = 0; j < n-i-1; j++)); do 
+        if [ ${array[j]} -gt ${array[j+1]} ]; then 
+            # Swap 
+            temp=${array[j]} 
+            array[j]=${array[j+1]} 
+            array[j+1]=$temp 
+        fi 
+    done 
+done 
+echo "Sorted array: ${array[@]}" 
+ 
+OUTPUT: 
+pratik@pratik-VirtualBox:~$ ./lab3.sh 
+Enter array elements separated by spaces: 4 2 5 8 1 
+Sorted array: 1 2 4 5 8 
+ 
+PROGARM: 
+4) Find Factorial of a Given Number With and Without Recursion 
+Without Recursion 
+#!/bin/bash 
+ 
+factorial_non_recursive() { 
+    num=$1 
+    fact=1 
+    for ((i=1; i<=num; i++)); do 
+        fact=$((fact * i)) 
+    done 
+    echo "Factorial (non-recursive) of $num is $fact" 
+} 
+ 
+# User input 
+read -p "Enter a number: " num 
+factorial_non_recursive $num 
+ 
+With Recursion 
+#!/bin/bash 
+ 
+factorial_recursive() { 
+    if [ $1 -le 1 ]; then 
+        echo 1 
+    else 
+        prev=$(factorial_recursive $(( $1 - 1 ))) 
+        echo $(( $1 * prev )) 
+fi 
+} 
+# User input 
+read -p "Enter a number: " num 
+fact=$(factorial_recursive $num) 
+echo "Factorial (recursive) of $num is $fact" 
+OUTPUT: 
+pratik@pratik-VirtualBox:~$ ./lab3.sh 
+Enter a number: 3 
+Factorial (non-recursive) of 3 is 6 
+pratik@pratik-VirtualBox:~$ ./lab3.sh 
+Enter a number: 4 
+Factorial (recursive) of 4 is 24 
+PROGARM: 
+5) Program to Check File Type and Permission for a Given File 
+#!/bin/bash 
+read -p "Enter file name: " file 
+if [ ! -e "$file" ]; then 
+echo "File does not exist!" 
+exit 1 
+fi 
+# Check file type 
+if [ -d "$file" ]; then 
+echo "$file is a directory." 
+elif [ -f "$file" ]; then 
+echo "$file is a regular file." 
+elif [ -L "$file" ]; then 
+echo "$file is a symbolic link." 
+else 
+echo "$file is of another file type." 
+fi 
+# Check file permissions 
+echo "File permissions for $file:" 
+[ -r "$file" ] && echo "Read permission: Yes" || echo "Read permission: No" 
+[ -w "$file" ] && echo "Write permission: Yes" || echo "Write permission: No" 
+[ -x "$file" ] && echo "Execute permission: Yes" || echo "Execute permission: No" 
+OUTPUT: 
+pratik@pratik-VirtualBox:~$ ./lab3.sh 
+Enter file name: fruits.txt 
+fruits.txt is a regular file. 
+File permissions for fruits.txt: 
+Read permission: Yes 
+Write permission: Yes 
+Execute permission: No 
+PROGARM: 
+6) Check if Entered String is Palindrome 
+#!/bin/bash 
+read -p "Enter a string: " str 
+reverse_str=$(echo "$str" | rev) 
+if [ "$str" == "$reverse_str" ]; then 
+echo "$str is a palindrome." 
+else 
+echo "$str is not a palindrome." 
+Fi 
+OUTPUT: 
+pratik@pratik-VirtualBox:~$ ./lab3.sh 
+Enter a string: naman 
+naman is a palindrome. 
+pratik@pratik-VirtualBox:~$ ./lab3.sh 
+Enter a string: Pratik 
+Pratik is not a palindrome.
+
+
+---------------------------------------------------------------------------------------------
+
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <algorithm>
+#include <iomanip>
+#include <climits>
+
+using namespace std;
+
+// Function to calculate the SSTF disk scheduling
+void calculateSSTF(vector<int>& requests, int n, int initial_head, int disk_size) {
+    int total_seek_time = 0;
+    int current_head = initial_head;
+    vector<bool> visited(n, false);
+
+    cout << "\nDisk Scheduling using SSTF Algorithm:\n";
+    cout << "------------------------------------------------------\n";
+    cout << "| Request No. |  Request   |  Seek Time      |\n";
+    cout << "------------------------------------------------------\n";
+
+    // Process each request
+    for (int count = 0; count < n; count++) {
+        int min_seek_time = INT_MAX;
+        int closest_request = -1;
+        int seek_time = 0;
+
+        // Find the closest unvisited request
+        for (int i = 0; i < n; i++) {
+            if (!visited[i]) {
+                seek_time = abs(requests[i] - current_head);
+                if (seek_time < min_seek_time) {
+                    min_seek_time = seek_time;
+                    closest_request = i;
+                }
+            }
+        }
+
+        // Update the total seek time and mark the request as visited
+        visited[closest_request] = true;
+        total_seek_time += min_seek_time;
+        current_head = requests[closest_request];
+
+        cout << "|      " << closest_request + 1 << "      |    " << requests[closest_request] 
+             << "     |     " << min_seek_time << "        |\n";
+    }
+
+    cout << "------------------------------------------------------\n";
+    cout << "Total Seek Time: " << total_seek_time << endl; // Display total seek time
+}
+
+int main() {
+    int n, initial_head, disk_size;
+
+    // Accept number of requests and initial head position
+    cout << "Enter the number of disk requests: ";
+    cin >> n;
+
+    vector<int> requests(n);
+    cout << "Enter the disk size: ";
+    cin >> disk_size;
+
+    cout << "Enter the initial head position: ";
+    cin >> initial_head;
+
+    cout << "Enter the disk requests: \n";
+    for (int i = 0; i < n; i++) {
+        cout << "Request " << i + 1 << ": ";
+        cin >> requests[i];
+    }
+
+    // Calculate and display the SSTF scheduling
+    calculateSSTF(requests, n, initial_head, disk_size);
+
+    return 0;
+}
+
+
+/*
+8
+200
+50
+1
+176
+79
+34
+60
+92
+11
+14
+114
+*/
+
+
+--------------------------------------------------------------------------------------------
+
+#!/bin/bash
+DB_FILE="student_database.txt"
+show_menu() {
+    echo "Select an operation:"
+    echo "a) Insert a record"
+    echo "b) Delete a record"
+    echo "c) Update a record"
+    echo "d) Search for a record"
+    echo "e) Exit"
+    read -p "Enter your choice: " choice
+}
+insert_record() {
+    read -p "Enter Student ID: " id
+    read -p "Enter Student Name: " name
+    read -p "Enter Student Grade: " grade
+    echo "$id,$name,$grade" >> "$DB_FILE"
+    echo "Record inserted successfully."
+}
+delete_record() {
+    read -p "Enter Student ID to delete: " id
+    if grep -q "^$id," "$DB_FILE"; then
+        grep -v "^$id," "$DB_FILE" > temp_file && mv temp_file "$DB_FILE"
+        echo "Record with ID $id deleted successfully."
+    else
+        echo "Record with ID $id not found."
+    fi
+}
+update_record() {
+    read -p "Enter Student ID to update: " id
+    if grep -q "^$id," "$DB_FILE"; then
+        read -p "Enter new Student Name: " name
+        read -p "Enter new Student Grade: " grade
+        grep -v "^$id," "$DB_FILE" > temp_file
+        echo "$id,$name,$grade" >> temp_file
+        mv temp_file "$DB_FILE"
+        echo "Record with ID $id updated successfully."
+    else
+        echo "Record with ID $id not found."
+    fi
+}
+search_record() {
+    read -p "Enter Student ID to search: " id
+    if grep -q "^$id," "$DB_FILE"; then
+        echo "Record found:"
+        grep "^$id," "$DB_FILE"
+    else
+        echo "Record with ID $id not found."
+    fi
+}
+while true; do
+    show_menu
+    case $choice in
+        a|A) insert_record ;;
+        b|B) delete_record ;;
+        c|C) update_record ;;
+        d|D) search_record ;;
+        e|E) echo "Exiting..."; exit 0 ;;
+        *) echo "Invalid option. Please try again." ;;
+    esac
+done
+
+------------------------------------------------------------------------------------------------------
+
+#include <iostream>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <cstring>
+#include <cstdlib>
+
+using namespace std;
+
+void process_related() {
+    pid_t pid = fork();
+    if (pid < 0) {
+        perror("Fork failed");
+        return;
+    } else if (pid == 0) {
+        cout << "Child Process ID: " << getpid() << endl;
+        cout << "Exiting child process...\n";
+        exit(0);
+    } else {
+        wait(NULL); // Parent waits for child to finish
+        cout << "Child process finished. Parent Process ID: " << getpid() << endl;
+    }
+}
+
+void file_related() {
+    int fd = open("example.txt", O_CREAT | O_RDWR, 0666);
+    if (fd < 0) {
+        perror("File open failed");
+        return;
+    }
+
+    const char *data = "My name is Pratik Mandalkar....\n";
+    if (write(fd, data, strlen(data)) < 0) {
+        perror("File write failed");
+        close(fd);
+        return;
+    }
+    lseek(fd, 0, SEEK_SET); // Move file pointer to the beginning
+
+    char buffer[1024];
+
+    ssize_t bytesRead = read(fd, buffer, sizeof(buffer));
+
+    if (bytesRead < 0) {
+        perror("File read failed");
+        close(fd);
+        return;
+    }
+
+    buffer[bytesRead] = '\0'; // Null-terminate the string
+    cout << "File content:\n" << buffer << endl;
+
+    close(fd);
+
+    // Link and unlink
+    if (link("example.txt", "example_link.txt") < 0) {
+        perror("Link failed");
+    } else {
+        cout << "File linked successfully.\n";
+    }
+
+    if (unlink("example_link.txt") < 0) {
+        perror("Unlink failed");
+    } else {
+        cout << "File unlinked successfully.\n";
+    }
+
+    struct stat fileStat;
+    if (stat("example.txt", &fileStat) < 0) {
+        perror("Stat failed");
+    } else {
+        cout << "File Size: " << fileStat.st_size << " bytes\n";
+        cout << "File Permissions: " << ((fileStat.st_mode & S_IRUSR) ? "r" : "-")
+             << ((fileStat.st_mode & S_IWUSR) ? "w" : "-")
+             << ((fileStat.st_mode & S_IXUSR) ? "x" : "-") << endl;
+    }
+}
+
+void communication_related() {
+    int pipefd[2];
+    if (pipe(pipefd) == -1) {
+        perror("Pipe failed");
+        return;
+    }
+
+    pid_t pid = fork();
+    if (pid < 0) {
+        perror("Fork failed");
+        return;
+    } else if (pid == 0) {
+        close(pipefd[0]); // Close reading end in child
+        const char *msg = "Hello from child!";
+        write(pipefd[1], msg, strlen(msg));
+        close(pipefd[1]); // Close writing end in child
+        exit(0);
+    } else {
+        close(pipefd[1]); // Close writing end in parent
+        char buffer[128];
+        ssize_t bytesRead = read(pipefd[0], buffer, sizeof(buffer));
+        if (bytesRead < 0) {
+            perror("Pipe read failed");
+        } else {
+            buffer[bytesRead] = '\0';
+            cout << "Parent received: " << buffer << endl;
+        }
+        close(pipefd[0]); // Close reading end in parent
+        wait(NULL);
+    }
+
+    // FIFO (named pipe)
+
+    const char *fifoName = "/tmp/my_fifo";
+
+    mkfifo(fifoName, 0666);
+
+
+
+    pid = fork();
+
+    if (pid < 0) {
+        perror("Fork failed");
+        return;
+    } else if (pid == 0) {
+        int fd = open(fifoName, O_WRONLY);
+        const char *msg = "Message from child via FIFO";
+        write(fd, msg, strlen(msg));
+        close(fd);
+        exit(0);
+    } else {
+        int fd = open(fifoName, O_RDONLY);
+        char buffer[128];
+        ssize_t bytesRead = read(fd, buffer, sizeof(buffer));
+        if (bytesRead < 0) {
+            perror("FIFO read failed");
+        } else {
+            buffer[bytesRead] = '\0';
+            cout << "Parent received via FIFO: " << buffer << endl;
+        }
+        close(fd);
+        wait(NULL);
+    }
+    unlink(fifoName); // Remove the FIFO file
+}
+
+void information_related() {
+    cout << "Process ID: " << getpid() << endl;
+    cout << "Parent Process ID: " << getppid() << endl;
+    cout << "User ID: " << getuid() << endl;
+    cout << "Group ID: " << getgid() << endl;
+}
+
+int main() {
+    int choice;
+    do {
+        cout << "\nMenu:\n";
+        cout << "1. Process related system calls (fork, exit, wait)\n";
+        cout << "2. File related system calls (open, read, write, close, link, unlink, stat)\n";
+        cout << "3. Communication related system calls (pipe, FIFO)\n";
+        cout << "4. Information related system calls\n";
+        cout << "5. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                process_related();
+                break;
+            case 2:
+                file_related();
+                break;
+            case 3:
+                communication_related();
+                break;
+            case 4:
+                information_related();
+                break;
+            case 5:
+                cout << "Exiting...\n";
+                break;
+            default:
+                cout << "Invalid choice. Please try again.\n";
+        }
+    } while (choice != 5);
+    return 0;
+}
+
+

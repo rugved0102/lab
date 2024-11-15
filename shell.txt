@@ -1,0 +1,185 @@
+1) Print Sum of Digits of a Given Number Using Command Line Argument 
+#!/bin/bash 
+if [ $# -eq 0 ]; then 
+echo "Usage: $0 <number>" 
+exit 1 
+fi 
+number=$1 
+sum=0 
+while [ $number -gt 0 ]; do 
+digit=$(( number % 10 )) 
+sum=$(( sum + digit )) 
+number=$(( number / 10 )) 
+done 
+echo "Sum of digits: $sum" 
+OUTPUT: 
+pratik@pratik-VirtualBox:~$ ./lab3.sh 123 
+Sum of digits: 6 
+PROGARM: 
+2) Shell Script Using Functions 
+#!/bin/bash 
+average() { 
+sum=0 
+count=$# 
+for num in "$@"; do 
+sum=$((sum + num)) 
+done 
+    avg=$(echo "scale=2; $sum / $count" | bc) 
+    echo "Average of given numbers: $avg" 
+} 
+ 
+max_digit() { 
+    num=$1 
+    max=0 
+    while [ $num -gt 0 ]; do 
+        digit=$((num % 10)) 
+        if [ $digit -gt $max ]; then 
+            max=$digit 
+        fi 
+        num=$((num / 10)) 
+    done 
+    echo "Maximum digit: $max" 
+} 
+ 
+min_digit() { 
+    num=$1 
+    min=9 
+    while [ $num -gt 0 ]; do 
+        digit=$((num % 10)) 
+        if [ $digit -lt $min ]; then 
+            min=$digit 
+        fi 
+        num=$((num / 10)) 
+    done 
+    echo "Minimum digit: $min" 
+} 
+ 
+read -p "Enter numbers separated by spaces: " -a numbers 
+average "${numbers[@]}" 
+ 
+read -p "Enter a number to find max and min digits: " number 
+max_digit $number 
+min_digit $number 
+ 
+OUTPUT: 
+pratik@pratik-VirtualBox:~$ ./lab3.sh 
+Enter numbers separated by spaces: 20 30 22 10 
+Average of given numbers: 20.50 
+Enter a number to find max and min digits: 3216978 
+Maximum digit: 9 
+Minimum digit: 1 
+ 
+PROGARM: 
+3) Perform Sorting on Given Array Elements 
+ 
+#!/bin/bash 
+ 
+read -p "Enter array elements separated by spaces: " -a array 
+ 
+# Bubble Sort 
+n=${#array[@]} 
+for ((i = 0; i < n; i++)); do 
+    for ((j = 0; j < n-i-1; j++)); do 
+        if [ ${array[j]} -gt ${array[j+1]} ]; then 
+            # Swap 
+            temp=${array[j]} 
+            array[j]=${array[j+1]} 
+            array[j+1]=$temp 
+        fi 
+    done 
+done 
+echo "Sorted array: ${array[@]}" 
+ 
+OUTPUT: 
+pratik@pratik-VirtualBox:~$ ./lab3.sh 
+Enter array elements separated by spaces: 4 2 5 8 1 
+Sorted array: 1 2 4 5 8 
+ 
+PROGARM: 
+4) Find Factorial of a Given Number With and Without Recursion 
+Without Recursion 
+#!/bin/bash 
+ 
+factorial_non_recursive() { 
+    num=$1 
+    fact=1 
+    for ((i=1; i<=num; i++)); do 
+        fact=$((fact * i)) 
+    done 
+    echo "Factorial (non-recursive) of $num is $fact" 
+} 
+ 
+# User input 
+read -p "Enter a number: " num 
+factorial_non_recursive $num 
+ 
+With Recursion 
+#!/bin/bash 
+ 
+factorial_recursive() { 
+    if [ $1 -le 1 ]; then 
+        echo 1 
+    else 
+        prev=$(factorial_recursive $(( $1 - 1 ))) 
+        echo $(( $1 * prev )) 
+fi 
+} 
+# User input 
+read -p "Enter a number: " num 
+fact=$(factorial_recursive $num) 
+echo "Factorial (recursive) of $num is $fact" 
+OUTPUT: 
+pratik@pratik-VirtualBox:~$ ./lab3.sh 
+Enter a number: 3 
+Factorial (non-recursive) of 3 is 6 
+pratik@pratik-VirtualBox:~$ ./lab3.sh 
+Enter a number: 4 
+Factorial (recursive) of 4 is 24 
+PROGARM: 
+5) Program to Check File Type and Permission for a Given File 
+#!/bin/bash 
+read -p "Enter file name: " file 
+if [ ! -e "$file" ]; then 
+echo "File does not exist!" 
+exit 1 
+fi 
+# Check file type 
+if [ -d "$file" ]; then 
+echo "$file is a directory." 
+elif [ -f "$file" ]; then 
+echo "$file is a regular file." 
+elif [ -L "$file" ]; then 
+echo "$file is a symbolic link." 
+else 
+echo "$file is of another file type." 
+fi 
+# Check file permissions 
+echo "File permissions for $file:" 
+[ -r "$file" ] && echo "Read permission: Yes" || echo "Read permission: No" 
+[ -w "$file" ] && echo "Write permission: Yes" || echo "Write permission: No" 
+[ -x "$file" ] && echo "Execute permission: Yes" || echo "Execute permission: No" 
+OUTPUT: 
+pratik@pratik-VirtualBox:~$ ./lab3.sh 
+Enter file name: fruits.txt 
+fruits.txt is a regular file. 
+File permissions for fruits.txt: 
+Read permission: Yes 
+Write permission: Yes 
+Execute permission: No 
+PROGARM: 
+6) Check if Entered String is Palindrome 
+#!/bin/bash 
+read -p "Enter a string: " str 
+reverse_str=$(echo "$str" | rev) 
+if [ "$str" == "$reverse_str" ]; then 
+echo "$str is a palindrome." 
+else 
+echo "$str is not a palindrome." 
+Fi 
+OUTPUT: 
+pratik@pratik-VirtualBox:~$ ./lab3.sh 
+Enter a string: naman 
+naman is a palindrome. 
+pratik@pratik-VirtualBox:~$ ./lab3.sh 
+Enter a string: Pratik 
+Pratik is not a palindrome.
